@@ -7,7 +7,7 @@ services:
             - '/data/coolify/applications/n386ggv4lfsdajmrr0yyoppc/nginx/conf.d:/etc/nginx/conf.d:ro'
         depends_on:
             php:
-                condition: service_started
+                condition: service_healthy
         networks:
             coolify: null
             n386ggv4lfsdajmrr0yyoppc: null
@@ -31,6 +31,7 @@ services:
             context: .
             dockerfile: Dockerfile.php
         restart: unless-stopped
+        user: "33:33"
         volumes:
             - '/data/coolify/applications/n386ggv4lfsdajmrr0yyoppc/src:/var/www/html'
         environment:
@@ -40,6 +41,12 @@ services:
             database_default_port: '5432'
             database_default_charset: utf8
             database_default_DBCollat: ''
+        healthcheck:
+            test: ["CMD-SHELL", "php-fpm -t 2>&1 | grep -q 'configuration file' && echo ok || exit 1"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 15s
         depends_on:
             postgres:
                 condition: service_healthy
