@@ -1,14 +1,19 @@
+# docker-compose.yaml
+# Stack: web-main | Laravel + PHP + PostgreSQL
+# Domain diatur via Coolify Dashboard → Domains (bukan manual labels)
+
 services:
+
   nginx:
     image: nginx:1.30-trixie
     restart: unless-stopped
-    #ports:
-    #  - "80:80"
     volumes:
       - ./:/var/www/html:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       - php
+    networks:
+      - coolify
 
   php:
     build:
@@ -18,24 +23,36 @@ services:
     volumes:
       - ./:/var/www/html
     environment:
-      CI_ENVIRONMENT: production
+      APP_ENV: ${APP_ENV:-production}
+      APP_KEY: ${APP_KEY}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL}
+      DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_DATABASE: ${DB_NAME}
-      DB_USERNAME: ${DB_USER}
-      DB_PASSWORD: ${DB_PASS}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
     depends_on:
       - postgres
+    networks:
+      - coolify
 
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - coolify
 
 volumes:
-  pg_data:
+  postgres_data:
+
+networks:
+  coolify:
+    external: true
