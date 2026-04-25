@@ -1,6 +1,6 @@
 # docker-compose.yaml
-# Stack: web-main | Laravel + PHP + PostgreSQL
-# Domain diatur via Coolify Dashboard → Domains (bukan manual labels)
+# Stack: web-main | CodeIgniter 4 + PHP-FPM + PostgreSQL
+# Env vars dikelola via Coolify Dashboard → Environment Variables
 
 services:
 
@@ -8,7 +8,7 @@ services:
     image: nginx:1.30-trixie
     restart: unless-stopped
     volumes:
-      - ./:/var/www/html:ro
+      - ./src:/var/www/html:ro          # ⚠️ SESUAIKAN: ganti ./src dengan subfolder CI4 kamu
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       - php
@@ -21,20 +21,33 @@ services:
       dockerfile: Dockerfile.php
     restart: unless-stopped
     volumes:
-      - ./:/var/www/html
+      - ./src:/var/www/html             # ⚠️ SESUAIKAN: sama dengan nginx di atas
     environment:
-      APP_ENV: ${APP_ENV:-production}
-      APP_KEY: ${APP_KEY}
-      APP_DEBUG: ${APP_DEBUG:-false}
-      APP_URL: ${APP_URL}
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      # ── CodeIgniter 4 ──────────────────────────────────────────
+      # Underscore menggantikan titik: database_default_hostname
+      # → CI4 baca sebagai: database.default.hostname
+      # ───────────────────────────────────────────────────────────
+
+      # App
+      CI_ENVIRONMENT: ${CI_ENVIRONMENT:-production}
+      app_baseURL: ${app_baseURL:?app_baseURL wajib diisi di Coolify UI}
+      encryption_key: ${encryption_key:?encryption_key wajib diisi di Coolify UI}
+
+      # Database (hostname & driver hardcode — tidak sensitif)
+      database_default_hostname: postgres
+      database_default_DBDriver: Postgre
+      database_default_port: "5432"
+      database_default_charset: utf8
+      database_default_DBCollat: ""
+
+      # Database (nilai sensitif — dari Coolify UI)
+      database_default_database: ${database_default_database:?Database name wajib diisi}
+      database_default_username: ${database_default_username:?Database username wajib diisi}
+      database_default_password: ${database_default_password:?Database password wajib diisi}
+
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy     # PHP tunggu sampai postgres benar-benar ready
     networks:
       - coolify
 
@@ -42,11 +55,17 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_DATABASE}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      # Reuse variable CI4 yang sama — satu sumber kebenaran di Coolify UI
+      POSTGRES_DB: ${database_default_database}
+      POSTGRES_USER: ${database_default_username}
+      POSTGRES_PASSWORD: ${database_default_password}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${database_default_username} -d ${database_default_database}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - coolify
 
