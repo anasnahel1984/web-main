@@ -4,9 +4,10 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libpq-dev \
     libpng-dev \
-    libjpeg62-turbo-dev \
+    libjpeg-dev \
     libwebp-dev \
     libfreetype6-dev \
+    libicu-dev \
     zip unzip git curl \
     && docker-php-ext-configure gd \
         --with-freetype \
