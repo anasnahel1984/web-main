@@ -40,12 +40,20 @@ RUN { \
     echo 'catch_workers_output = yes'; \
 } > /usr/local/etc/php-fpm.d/www.conf
 
-WORKDIR /var/www/html
+# Copy source ke image di /app-src (akan di-copy ke volume saat startup)
+WORKDIR /app-src
 COPY . .
 
-RUN chown -R www-data:www-data /var/www/html \
-    && find /var/www/html -type d -exec chmod 755 {} \; \
-    && find /var/www/html -type f -exec chmod 644 {} \; \
-    && chmod -R 775 /var/www/html/writable
+RUN chown -R www-data:www-data /app-src \
+    && find /app-src -type d -exec chmod 755 {} \; \
+    && find /app-src -type f -exec chmod 644 {} \; \
+    && chmod -R 775 /app-src/writable
 
+# Entrypoint: populate /var/www/html dari /app-src jika belum ada
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+WORKDIR /var/www/html
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["php-fpm"]
