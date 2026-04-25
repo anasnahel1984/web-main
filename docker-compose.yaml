@@ -1,10 +1,11 @@
 services:
     nginx:
-        image: 'nginx:1.30-trixie'
+        build:
+            context: .
+            dockerfile: Dockerfile.nginx
         restart: unless-stopped
         volumes:
             - '/data/coolify/applications/n386ggv4lfsdajmrr0yyoppc/src:/var/www/html:ro'
-            - '/data/coolify/applications/n386ggv4lfsdajmrr0yyoppc/nginx/conf.d:/etc/nginx/conf.d:ro'
         depends_on:
             php:
                 condition: service_healthy
