@@ -2,8 +2,8 @@ services:
   nginx:
     image: nginx:1.30-trixie
     restart: unless-stopped
-    ports:
-      - "80:80"
+    #ports:
+    #  - "80:80"
     volumes:
       - ./:/var/www/html:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
