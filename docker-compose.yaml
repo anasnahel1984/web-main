@@ -5,7 +5,7 @@ services:
             dockerfile: Dockerfile.nginx
         restart: unless-stopped
         volumes:
-            - '/data/coolify/applications/n386ggv4lfsdajmrr0yyoppc/src:/var/www/html:ro'
+            - app-src:/var/www/html:ro
         depends_on:
             php:
                 condition: service_healthy
@@ -34,7 +34,7 @@ services:
         restart: unless-stopped
         user: "33:33"
         volumes:
-            - '/data/coolify/applications/n386ggv4lfsdajmrr0yyoppc/src:/var/www/html'
+            - app-src:/var/www/html
         environment:
             CI_ENVIRONMENT: production
             database_default_hostname: postgres
@@ -106,6 +106,8 @@ services:
             - .env
 
 volumes:
+    app-src:
+        name: n386ggv4lfsdajmrr0yyoppc_app-src
     n386ggv4lfsdajmrr0yyoppc_postgres-data:
         name: n386ggv4lfsdajmrr0yyoppc_postgres-data
 
