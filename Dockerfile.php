@@ -53,7 +53,8 @@ RUN chown -R www-data:www-data /app-src \
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-WORKDIR /var/www/html
+HEALTHCHECK --interval=10s --timeout=5s --retries=5 --start-period=30s \
+    CMD php-fpm -t || exit 1
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["php-fpm"]
