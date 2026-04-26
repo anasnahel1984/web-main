@@ -1,119 +1,88 @@
 services:
-    nginx:
-        build:
-            context: .
-            dockerfile: Dockerfile.nginx
-        restart: unless-stopped
-        volumes:
-            - app-src:/var/www/html:ro
-        depends_on:
-            php:
-                condition: service_healthy
-        networks:
-            coolify: null
-            n386ggv4lfsdajmrr0yyoppc: null
-        container_name: nginx-n386ggv4lfsdajmrr0yyoppc-094222571724
-        labels:
-            - coolify.managed=true
-            - coolify.version=4.0.0-beta.474
-            - coolify.applicationId=2
-            - coolify.type=application
-            - coolify.name=nginx-n386ggv4lfsdajmrr0yyoppc-094222571724
-            - coolify.resourceName=web-mainmain-d9xeuj5p3bw77kw691csi4de
-            - coolify.projectName=sman1suruh
-            - coolify.serviceName=web-mainmain-d9xeuj5p3bw77kw691csi4de
-            - coolify.environmentName=production
-            - coolify.pullRequestId=0
-        env_file:
-            - .env
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    restart: unless-stopped
+    volumes:
+      - app-src:/var/www/html:ro
+    depends_on:
+      php:
+        condition: service_healthy
+    networks:
+      coolify: null
+      n386ggv4lfsdajmrr0yyoppc: null
+    container_name: nginx-n386ggv4lfsdajmrr0yyoppc-094222571724
+    labels:
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.474
+      - coolify.applicationId=2
+      - coolify.type=application
+      - coolify.name=nginx-n386ggv4lfsdajmrr0yyoppc-094222571724
+      - coolify.resourceName=web-mainmain-d9xeuj5p3bw77kw691csi4de
+      - coolify.projectName=sman1suruh
+      - coolify.serviceName=web-mainmain-d9xeuj5p3bw77kw691csi4de
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+    env_file:
+      - .env
 
-    php:
-        build:
-            context: .
-            dockerfile: Dockerfile.php
-        restart: unless-stopped
-        user: "33:33"
-        volumes:
-            - app-src:/var/www/html
-        environment:
-            CI_ENVIRONMENT: production
-            database_default_hostname: postgres
-            database_default_DBDriver: Postgre
-            database_default_port: '5432'
-            database_default_charset: utf8
-            database_default_DBCollat: ''
-        healthcheck:
-            test: ["CMD-SHELL", "php-fpm -t 2>&1 | grep -q 'configuration file' && echo ok || exit 1"]
-            interval: 10s
-            timeout: 5s
-            retries: 5
-            start_period: 15s
-        depends_on:
-            postgres:
-                condition: service_healthy
-        networks:
-            coolify: null
-            n386ggv4lfsdajmrr0yyoppc: null
-        container_name: php-n386ggv4lfsdajmrr0yyoppc-094222578041
-        labels:
-            - coolify.managed=true
-            - coolify.version=4.0.0-beta.474
-            - coolify.applicationId=2
-            - coolify.type=application
-            - coolify.name=php-n386ggv4lfsdajmrr0yyoppc-094222578041
-            - coolify.resourceName=web-mainmain-d9xeuj5p3bw77kw691csi4de
-            - coolify.projectName=sman1suruh
-            - coolify.serviceName=web-mainmain-d9xeuj5p3bw77kw691csi4de
-            - coolify.environmentName=production
-            - coolify.pullRequestId=0
-        env_file:
-            - .env
-        image: 'n386ggv4lfsdajmrr0yyoppc_php:7d7c29c32d421a1e0d6925bd415ea79c9f3495f3'
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile.php
+    restart: unless-stopped
+    user: "33:33"
+    volumes:
+      - app-src:/var/www/html
+    environment:
+      CI_ENVIRONMENT: production
+      database_default_hostname: postgres
+      database_default_DBDriver: Postgre
+      database_default_port: '5432'
+      database_default_charset: utf8
+      database_default_DBCollat: ''
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      n386ggv4lfsdajmrr0yyoppc: null
+    healthcheck:
+      test: ["CMD", "php-fpm", "-t"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
-    postgres:
-        image: 'postgres:17-alpine'
-        restart: unless-stopped
-        environment:
-            POSTGRES_DB: '${database_default_database}'
-            POSTGRES_USER: '${database_default_username}'
-            POSTGRES_PASSWORD: '${database_default_password}'
-        volumes:
-            - 'n386ggv4lfsdajmrr0yyoppc_postgres-data:/var/lib/postgresql/data'
-        healthcheck:
-            test:
-                - CMD-SHELL
-                - 'pg_isready -U ${database_default_username} -d ${database_default_database}'
-            interval: 10s
-            timeout: 5s
-            retries: 5
-            start_period: 30s
-        networks:
-            coolify: null
-            n386ggv4lfsdajmrr0yyoppc: null
-        container_name: postgres-n386ggv4lfsdajmrr0yyoppc-094222585358
-        labels:
-            - coolify.managed=true
-            - coolify.version=4.0.0-beta.474
-            - coolify.applicationId=2
-            - coolify.type=application
-            - coolify.name=postgres-n386ggv4lfsdajmrr0yyoppc-094222585358
-            - coolify.resourceName=web-mainmain-d9xeuj5p3bw77kw691csi4de
-            - coolify.projectName=sman1suruh
-            - coolify.serviceName=web-mainmain-d9xeuj5p3bw77kw691csi4de
-            - coolify.environmentName=production
-            - coolify.pullRequestId=0
-        env_file:
-            - .env
+  postgres:
+    image: 'postgres:17-alpine'
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: '${database_default_database}'
+      POSTGRES_USER: '${database_default_username}'
+      POSTGRES_PASSWORD: '${database_default_password}'
+    volumes:
+      - 'n386ggv4lfsdajmrr0yyoppc_postgres-data:/var/lib/postgresql/data'
+    networks:
+      n386ggv4lfsdajmrr0yyoppc: null
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${database_default_username} -d ${database_default_database}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
 volumes:
-    app-src:
-        name: n386ggv4lfsdajmrr0yyoppc_app-src
-    n386ggv4lfsdajmrr0yyoppc_postgres-data:
-        name: n386ggv4lfsdajmrr0yyoppc_postgres-data
+  app-src:
+    name: n386ggv4lfsdajmrr0yyoppc_app-src
+  n386ggv4lfsdajmrr0yyoppc_postgres-data:
+    name: n386ggv4lfsdajmrr0yyoppc_postgres-data
 
 networks:
-    coolify:
-        external: true
-    n386ggv4lfsdajmrr0yyoppc:
-        name: n386ggv4lfsdajmrr0yyoppc
-        external: true
+  coolify:
+    external: true
+  n386ggv4lfsdajmrr0yyoppc:
+    name: n386ggv4lfsdajmrr0yyoppc
+    external: true
