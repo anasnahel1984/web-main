@@ -6,7 +6,6 @@ services:
     restart: unless-stopped
     volumes:
       - app-src:/var/www/html:ro
-                            - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       php:
         condition: service_healthy
